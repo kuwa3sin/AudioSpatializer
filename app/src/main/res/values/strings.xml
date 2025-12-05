@@ -1,0 +1,147 @@
+<resources>
+    <string name="app_name">Audio Spatializer</string>
+    <string name="tab_convert">Convert</string>
+    <string name="tab_musics">Musics</string>
+    <string name="pick_audio">ファイルを選択</string>
+    <string name="file_selection_title">変換するファイル</string>
+    <string name="status_preparing">準備中…</string>
+    <string name="status_converting">変換中</string>
+    <string name="status_done">完了しました</string>
+    <string name="status_failed">失敗しました</string>
+    <string name="status_ready">ファイルを選択してください</string>
+    <string name="status_file_selected">変換を開始できます</string>
+    <string name="status_cancelled">キャンセルしました</string>
+    <string name="btn_start_conversion">変換開始</string>
+    <string name="btn_cancel">中止</string>
+    <string name="file_size_format">%1$.1f MB</string>
+    <string name="file_size_kb_format">%1$.1f KB</string>
+    <string name="no_music_files">音楽ファイルがありません</string>
+    <string name="convert_audio_hint">「Convert」タブでオーディオファイルを5.1サラウンドに変換してください</string>
+    <string name="convert_title">オーディオ空間化</string>
+    <string name="convert_subtitle">ステレオ音源を空間オーディオに変換</string>
+    <string name="conversion_progress">変換進行状況</string>
+    <string name="status_converting_with_percent">変換中: %1$d%%</string>
+    <string name="conversion_success">変換が完了しました: %1$s</string>
+    <string name="conversion_failed">変換に失敗しました。別のファイルをお試しください。</string>
+    
+    <!-- Output Mode Selection -->
+    <string name="output_mode_title">出力モード</string>
+    <string name="output_mode_hint">モードを選択</string>
+    <string name="output_mode_binaural">HRTF バイノーラル（2.0ch）</string>
+    <string name="output_mode_binaural_desc">HRTFベースの空間処理。ヘッドフォン向けに最適化された没入感のある3Dサウンド。</string>
+    <string name="output_mode_surround">HRTF サラウンド（5.1ch）</string>
+    <string name="output_mode_surround_desc">HRTFベースの空間処理を5.1chにアップミックス。スピーカーシステムでも空間感を体験。</string>
+    <string name="output_mode_immersive">HRTF イマーシブ（5.1ch）</string>
+    <string name="output_mode_immersive_desc">リア/サイドチャンネルを強化し、より包み込まれるような没入感のあるサラウンド。</string>
+    <string name="output_mode_fast">高速イマーシブ（5.1ch）</string>
+    <string name="output_mode_fast_desc">リアルタイム処理向けの超高速変換。DSPフィルタなしで最速処理。音質よりも速度を優先。</string>
+    <string name="output_mode_71">HRTF イマーシブ（7.1ch）</string>
+    <string name="output_mode_71_desc">サイドとバックを分離した8チャンネルサラウンド。ヘッドトラッキング対応。</string>
+    <string name="status_spatializing">空間化中</string>
+    
+    <string name="share_audio_title">共有: %1$s</string>
+    <string name="share_audio_error">共有できませんでした</string>
+    
+    <!-- File Actions -->
+    <string name="action_rename">名前を変更</string>
+    <string name="action_share">共有</string>
+    <string name="action_delete">削除</string>
+    <string name="rename_dialog_title">ファイル名を変更</string>
+    <string name="rename_dialog_hint">新しいファイル名</string>
+    <string name="rename_success">名前を変更しました</string>
+    <string name="rename_error">名前の変更に失敗しました</string>
+    <string name="delete_dialog_title">ファイルを削除</string>
+    <string name="delete_dialog_message">「%1$s」を削除しますか？この操作は取り消せません。</string>
+    <string name="delete_success">削除しました</string>
+    <string name="delete_error">削除に失敗しました</string>
+    <string name="btn_delete">削除</string>
+    
+    <string name="player_idle_title">再生待機中</string>
+    <string name="player_idle_subtitle">リストからトラックを選択して再生</string>
+    <string name="player_play">再生</string>
+    <string name="player_pause">一時停止</string>
+    <string name="player_meta_template">%1$s / %2$dHz / %3$dch</string>
+    <string name="head_tracking_toggle">ヘッドトラッキング</string>
+    <string name="head_tracking_unavailable">未対応</string>
+    <string name="head_tracking_no_headphones">ヘッドフォン未接続</string>
+    <string name="head_tracking_enabled">有効</string>
+    <string name="head_tracking_disabled">無効</string>
+    <string name="player_missing_file">ファイルが見つかりません。再変換してください。</string>
+    <string name="head_tracking_visualizer_content_desc">ヘッドトラッキングの状態を示すビジュアライザ</string>
+    <string name="tile_spatial_audio">空間オーディオ</string>
+    <string name="spatial_service_title">空間オーディオ</string>
+    <string name="spatial_service_enabled">空間オーディオ処理を適用中</string>
+    <string name="spatial_service_disabled">無効: タップして空間オーディオを有効にする</string>
+    <string name="spatial_service_action_enable">有効化</string>
+    <string name="spatial_service_action_disable">無効化</string>
+    <string name="notification_channel_spatial_audio">空間オーディオ制御</string>
+    
+    <!-- Headphone Info -->
+    <string name="headphone_icon_desc">ヘッドフォンアイコン</string>
+    <string name="headphone_disconnected_desc">ヘッドフォン未接続</string>
+    <string name="headphone_unknown_device">不明なデバイス</string>
+    <string name="no_headphone_connected">ヘッドフォン未接続</string>
+    <string name="no_headphone_hint">空間オーディオを体験するにはヘッドフォンを接続してください</string>
+    <string name="btn_connect">接続</string>
+    <string name="badge_spatial_audio">空間オーディオ</string>
+    <string name="badge_head_tracking">ヘッドトラッキング</string>
+    <string name="badge_not_supported">非対応</string>
+    <string name="spatial_audio_supported">空間オーディオ対応</string>
+    <string name="spatial_audio_not_supported">空間オーディオ非対応</string>
+    <string name="head_tracking_supported">ヘッドトラッキング対応</string>
+    <string name="head_tracking_not_supported">ヘッドトラッキング非対応</string>
+    
+    <!-- Conversion Notification -->
+    <string name="conversion_notification_title">オーディオ変換</string>
+    <string name="conversion_notification_channel_name">オーディオ変換</string>
+    <string name="conversion_notification_channel_desc">オーディオ変換の進捗を表示します</string>
+    <string name="conversion_in_background">バックグラウンドで変換中…</string>
+    
+    <!-- Playback Notification -->
+    <string name="playback_channel_name">音楽再生</string>
+    <string name="playback_channel_desc">音楽再生の制御を表示します</string>
+    <string name="player_preparing">プレイヤー準備中...</string>
+    
+    <!-- Realtime Spatial Audio -->
+    <string name="tab_realtime">Realtime</string>
+    <string name="realtime_title">リアルタイム再生</string>
+    <string name="realtime_description">音楽ファイルを変換せずにリアルタイムで5.1ch空間化再生</string>
+    <string name="realtime_start">開始</string>
+    <string name="realtime_stop">停止</string>
+    <string name="realtime_status_active">空間オーディオ処理中</string>
+    <string name="realtime_spatialization_enabled">空間化を有効にする</string>
+    <string name="realtime_head_tracking">ヘッドトラッキング</string>
+    <string name="realtime_hint">開始ボタンを押すと、画面録画の許可ダイアログが表示されます。\n音声のみをキャプチャし、画面は録画しません。</string>
+    <string name="realtime_spatial_channel_name">リアルタイム空間オーディオ</string>
+    <string name="realtime_spatial_channel_desc">リアルタイム空間オーディオ処理の状態を表示します</string>
+    <string name="realtime_spatial_notification_title">空間オーディオ処理中</string>
+    <string name="realtime_spatial_notification_text">他のアプリの音声に空間オーディオを適用しています</string>
+    <string name="realtime_spatial_stop">停止</string>
+    <string name="realtime_surround_mode">サラウンドモード</string>
+    <string name="realtime_intensity">強度</string>
+    <string name="realtime_intensity_format">%d%%</string>
+    <string name="realtime_hint_new">音楽ファイルを選択して、変換せずにそのまま\n5.1ch空間オーディオとして再生できます。\n\nヘッドトラッキング対応イヤホンで最高の体験を！</string>
+    <string name="realtime_how_it_works_title">仕組み</string>
+    <string name="realtime_how_it_works">■ 処理フロー\n1. 音楽ファイルをデコード\n2. ステレオ → 5.1ch にリアルタイム変換\n3. 5.1ch AudioTrack で再生\n4. Spatializer API が自動適用\n\n■ 対応機能\n✓ 5.1ch アップミックス\n✓ ヘッドトラッキング（対応イヤホン）\n✓ HRTF空間オーディオ\n\n※ 変換待ち時間なしで即座に空間化再生</string>
+    <string name="realtime_session_count">アクティブセッション: %d</string>
+    <string name="spatializer_status_available">Spatializer: 有効</string>
+    <string name="spatializer_status_unavailable">Spatializer: 無効（対応イヤホンを接続してください）</string>
+    
+    <!-- Head Tracking Settings -->
+    <string name="head_tracking_settings_title">ヘッドトラッキング設定</string>
+    <string name="head_tracking_status_ready">ヘッドトラッキング対応デバイスが接続されています</string>
+    <string name="head_tracking_status_no_device">対応デバイスが接続されていません</string>
+    <string name="head_tracking_status_active">ヘッドトラッキングがアクティブです</string>
+    <string name="head_tracking_immersive_toggle">システムイマーシブオーディオを有効化</string>
+    <string name="head_tracking_immersive_desc">接続されたイヤホンの空間オーディオ機能を使用</string>
+    <string name="head_tracking_tracking_toggle">ヘッドトラッキングを有効化</string>
+    <string name="head_tracking_tracking_desc">頭の動きに応じて音の方向を追従</string>
+    <string name="head_tracking_supported_devices">対応デバイス</string>
+    <string name="head_tracking_device_connected">接続中</string>
+    <string name="head_tracking_device_supported">対応</string>
+    <string name="head_tracking_api_unavailable">お使いの端末はSpatializer APIに対応していません（Android 12L以上が必要）</string>
+    <string name="head_tracking_permission_required">Bluetooth権限が必要です</string>
+    <string name="head_tracking_permission_denied">Bluetooth権限が拒否されました。設定から許可してください。</string>
+    <string name="manufacturer_google">Google</string>
+    <string name="manufacturer_sony">Sony</string>
+</resources>

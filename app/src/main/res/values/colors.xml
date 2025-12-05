@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="spatial_head_outline">#FF8AB4F8</color>
+    <color name="spatial_head_pointer">#FF00BFA5</color>
+    <color name="spatial_source_dot">#FFFFB300</color>
+    <color name="spatial_disabled_overlay">#803C4043</color>
+    <color name="spotify_green">#1DB954</color>
+</resources>
