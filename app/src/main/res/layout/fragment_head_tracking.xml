@@ -53,9 +53,9 @@
                         android:layout_height="48dp"
                         android:src="@drawable/ic_spatial_audio_24"
                         android:background="@drawable/bg_icon_circle"
-                        android:backgroundTint="?attr/colorPrimaryContainer"
+                        android:backgroundTint="?attr/colorOnPrimaryContainer"
                         android:padding="12dp"
-                        app:tint="?attr/colorOnPrimaryContainer"
+                        app:tint="?attr/colorPrimaryContainer"
                         android:contentDescription="@string/status_icon_desc" />
 
                     <LinearLayout

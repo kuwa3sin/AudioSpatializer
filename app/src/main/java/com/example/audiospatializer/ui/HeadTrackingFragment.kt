@@ -186,7 +186,7 @@ class HeadTrackingFragment : Fragment() {
             iconView.setImageResource(R.drawable.ic_check_circle_24)
             iconView.imageTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_primary)
         } else {
-            iconView.setImageResource(R.drawable.ic_spatial_audio_off_24)
+            iconView.setImageResource(R.drawable.ic_error_24)
             iconView.imageTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_error)
         }
     }
@@ -198,24 +198,28 @@ class HeadTrackingFragment : Fragment() {
                 binding.textOverallHint.text = getString(R.string.overall_status_ready_hint)
                 binding.statusIcon.setImageResource(R.drawable.ic_spatial_tracking_24)
                 binding.statusIcon.backgroundTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_primary_container)
+                binding.statusIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_on_primary_container)
             }
             status.isSpatializerEnabled && status.isSpatializerAvailable -> {
                 binding.textOverallStatus.text = getString(R.string.overall_status_spatial_only)
                 binding.textOverallHint.text = getString(R.string.overall_status_spatial_only_hint)
                 binding.statusIcon.setImageResource(R.drawable.ic_spatial_audio_24)
                 binding.statusIcon.backgroundTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_secondary_container)
+                binding.statusIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_on_secondary_container)
             }
             status.isDeviceConnected && !status.isSpatializerEnabled -> {
                 binding.textOverallStatus.text = getString(R.string.overall_status_disabled)
                 binding.textOverallHint.text = getString(R.string.overall_status_disabled_hint)
                 binding.statusIcon.setImageResource(R.drawable.ic_spatial_audio_off_24)
                 binding.statusIcon.backgroundTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_error_container)
+                binding.statusIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_on_error_container)
             }
             else -> {
                 binding.textOverallStatus.text = getString(R.string.overall_status_no_device)
                 binding.textOverallHint.text = getString(R.string.overall_status_no_device_hint)
                 binding.statusIcon.setImageResource(R.drawable.ic_headphones_off_24)
                 binding.statusIcon.backgroundTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_surface_variant)
+                binding.statusIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_on_surface_variant)
             }
         }
     }
