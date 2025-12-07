@@ -150,7 +150,7 @@ class AudioProcessor(private val context: Context) {
             
             initializeFilters()
             
-            val outputFile = createOutputFile(inputUri)
+            val outputFile = createOutputFile(inputUri, outputMode)
             
             val result = when (outputMode) {
                 OutputMode.HRTF_BINAURAL -> {
@@ -220,15 +220,29 @@ class AudioProcessor(private val context: Context) {
 
     /**
      * 出力ファイル生成
+     * ファイル名形式: 年月日時間分_元ファイル名_変換形式.m4a
      */
-    private fun createOutputFile(inputUri: Uri): File {
+    private fun createOutputFile(inputUri: Uri, outputMode: OutputMode): File {
         val baseName = inputUri.lastPathSegment
             ?.substringAfterLast('/')
             ?.substringBeforeLast('.')
             ?: "output"
-        val timestamp = System.currentTimeMillis()
+        
+        // 年月日時間分形式: yyyyMMddHHmm
+        val dateFormat = java.text.SimpleDateFormat("yyyyMMddHHmm", java.util.Locale.getDefault())
+        val timestamp = dateFormat.format(java.util.Date())
+        
+        // 変換形式: quality (Immersive) または fast
+        val modeLabel = when (outputMode) {
+            OutputMode.HRTF_SURROUND_5_1_IMMERSIVE -> "quality"
+            OutputMode.HRTF_SURROUND_5_1_FAST -> "fast"
+            OutputMode.HRTF_BINAURAL -> "binaural"
+            OutputMode.HRTF_SURROUND_5_1 -> "51ch"
+            OutputMode.HRTF_SURROUND_7_1 -> "71ch"
+        }
+        
         val outputDir = context.getExternalFilesDir(null) ?: context.filesDir
-        return File(outputDir, "${baseName}_spatial_$timestamp.m4a")
+        return File(outputDir, "${timestamp}_${baseName}_${modeLabel}.m4a")
     }
 
     /**
