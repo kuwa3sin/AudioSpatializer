@@ -60,6 +60,14 @@ class SpatialAudioController(private val context: Context) {
         USB
     }
 
+    /**
+     * スピーカー空間オーディオ対応情報
+     */
+    data class SpeakerSpatialInfo(
+        val supportsSpatialAudio: Boolean = false,
+        val deviceName: String? = null
+    )
+
     companion object {
         private const val TAG = "SpatialAudioController"
     }
@@ -102,6 +110,9 @@ class SpatialAudioController(private val context: Context) {
     private val _headphoneInfo = MutableStateFlow(HeadphoneInfo())
     val headphoneInfo: StateFlow<HeadphoneInfo> = _headphoneInfo.asStateFlow()
 
+    private val _speakerSpatialInfo = MutableStateFlow(SpeakerSpatialInfo())
+    val speakerSpatialInfo: StateFlow<SpeakerSpatialInfo> = _speakerSpatialInfo.asStateFlow()
+
     private val handler = Handler(Looper.getMainLooper())
     private var headPosePollingRunnable: Runnable? = null
     private var isPollingHeadPose = false
@@ -117,6 +128,7 @@ class SpatialAudioController(private val context: Context) {
         
         refreshState()
         refreshHeadphoneInfo()
+        refreshSpeakerInfo()
     }
 
     fun refreshState() {
@@ -135,27 +147,20 @@ class SpatialAudioController(private val context: Context) {
 
     /**
      * 接続中のヘッドフォン情報を更新
+     * 音声出力先として実際に使用されているデバイスのみを対象とする
      */
     @SuppressLint("MissingPermission")
     fun refreshHeadphoneInfo() {
         try {
-            val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            // 現在の音声出力先デバイスを取得
+            val activeDevice = getActiveAudioOutputDevice()
             
-            // ヘッドフォン/イヤホンデバイスを探す
-            val headphoneDevice = devices.firstOrNull { device ->
-                device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
-                device.type == AudioDeviceInfo.TYPE_BLE_HEADSET ||
-                device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
-                device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
-                device.type == AudioDeviceInfo.TYPE_USB_HEADSET
-            }
-
-            if (headphoneDevice == null) {
+            if (activeDevice == null) {
                 _headphoneInfo.value = HeadphoneInfo(isConnected = false)
                 return
             }
 
-            val deviceType = when (headphoneDevice.type) {
+            val deviceType = when (activeDevice.type) {
                 AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> HeadphoneType.BLUETOOTH_A2DP
                 AudioDeviceInfo.TYPE_BLE_HEADSET -> HeadphoneType.BLUETOOTH_LE_AUDIO
                 AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_WIRED_HEADSET -> HeadphoneType.WIRED
@@ -164,15 +169,15 @@ class SpatialAudioController(private val context: Context) {
             }
 
             // デバイス名を取得
-            var deviceName = headphoneDevice.productName?.toString()?.takeIf { it.isNotBlank() }
+            var deviceName = activeDevice.productName?.toString()?.takeIf { it.isNotBlank() }
 
-            // Bluetoothデバイスの場合、より詳細な名前を取得（権限がなくても続行）
+            // Bluetoothデバイスの場合、より詳細な名前を取得
             if (deviceType == HeadphoneType.BLUETOOTH_A2DP || deviceType == HeadphoneType.BLUETOOTH_LE_AUDIO) {
-                deviceName = getConnectedBluetoothDeviceName() ?: deviceName
+                deviceName = getActiveBluetoothAudioDeviceName() ?: deviceName
             }
 
             // 空間オーディオ対応チェック
-            val supportsSpatialAudio = checkSpatialAudioSupport(headphoneDevice)
+            val supportsSpatialAudio = checkSpatialAudioSupport(activeDevice)
             
             // ヘッドトラッキング対応チェック
             val supportsHeadTracking = isHeadTrackerAvailable()
@@ -185,7 +190,6 @@ class SpatialAudioController(private val context: Context) {
                 deviceType = deviceType
             )
         } catch (_: SecurityException) {
-            // BLUETOOTH_CONNECT権限がない場合はデフォルト状態を維持
             _headphoneInfo.value = HeadphoneInfo(isConnected = false)
         } catch (_: Exception) {
             _headphoneInfo.value = HeadphoneInfo(isConnected = false)
@@ -193,10 +197,95 @@ class SpatialAudioController(private val context: Context) {
     }
 
     /**
-     * 接続中のBluetoothデバイス名を取得
+     * スピーカー空間オーディオ対応情報を更新
+     */
+    fun refreshSpeakerInfo() {
+        try {
+            val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            val speaker = devices.find { 
+                it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER && it.isSink 
+            }
+            
+            if (speaker != null) {
+                // Spatializerがスピーカーでの空間オーディオをサポートしているかチェック
+                val supportsSpatial = checkSpeakerSpatialAudioSupport(speaker)
+                _speakerSpatialInfo.value = SpeakerSpatialInfo(
+                    supportsSpatialAudio = supportsSpatial,
+                    deviceName = speaker.productName?.toString() ?: getString(R.string.speaker_device_name)
+                )
+            } else {
+                _speakerSpatialInfo.value = SpeakerSpatialInfo(supportsSpatialAudio = false)
+            }
+        } catch (_: Exception) {
+            _speakerSpatialInfo.value = SpeakerSpatialInfo(supportsSpatialAudio = false)
+        }
+    }
+
+    /**
+     * スピーカーが空間オーディオに対応しているかチェック
+     */
+    private fun checkSpeakerSpatialAudioSupport(speaker: AudioDeviceInfo): Boolean {
+        if (!spatializer.isAvailable) return false
+        
+        return try {
+            // Spatializerがスピーカーに対して空間オーディオを適用できるかチェック
+            val audioFormat = AudioFormat.Builder()
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setSampleRate(48000)
+                .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+                .build()
+                
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+            
+            // canBeSpatialized で対応チェック（デバイス指定なしで内蔵スピーカーを使用）
+            spatializer.canBeSpatialized(audioAttributes, audioFormat)
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /**
+     * 現在アクティブな音声出力デバイス（ヘッドフォン/イヤホン）を取得
+     * スマートウォッチなど音声出力に使用されていないデバイスは除外
+     */
+    private fun getActiveAudioOutputDevice(): AudioDeviceInfo? {
+        val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+        
+        // オーディオ出力に適したデバイスタイプのみフィルタ
+        val audioOutputTypes = setOf(
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+            AudioDeviceInfo.TYPE_BLE_HEADSET,
+            AudioDeviceInfo.TYPE_BLE_SPEAKER,
+            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+            AudioDeviceInfo.TYPE_WIRED_HEADSET,
+            AudioDeviceInfo.TYPE_USB_HEADSET
+        )
+        
+        // 音楽再生に対応したデバイスのみ抽出
+        val audioDevices = devices.filter { device ->
+            device.type in audioOutputTypes && device.isSink
+        }
+        
+        // 優先順位: BLE Audio > A2DP > 有線 > USB
+        return audioDevices.sortedByDescending { device ->
+            when (device.type) {
+                AudioDeviceInfo.TYPE_BLE_HEADSET, AudioDeviceInfo.TYPE_BLE_SPEAKER -> 4
+                AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> 3
+                AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_WIRED_HEADSET -> 2
+                AudioDeviceInfo.TYPE_USB_HEADSET -> 1
+                else -> 0
+            }
+        }.firstOrNull()
+    }
+
+    /**
+     * アクティブなBluetooth A2DPデバイス名を取得
      */
     @SuppressLint("MissingPermission")
-    private fun getConnectedBluetoothDeviceName(): String? {
+    private fun getActiveBluetoothAudioDeviceName(): String? {
         return try {
             val adapter = bluetoothManager?.adapter ?: return null
             
@@ -206,9 +295,15 @@ class SpatialAudioController(private val context: Context) {
                     try {
                         if (profile == BluetoothProfile.A2DP) {
                             val devices = proxy.connectedDevices
-                            @Suppress("UNUSED_VARIABLE")
-                            val deviceName = devices.firstOrNull()?.name
-                            // 非同期で取得されるため、ここでは使用しない
+                            // A2DP接続されているデバイス = 実際に音楽を再生できるデバイス
+                            val a2dpDevice = devices.firstOrNull()
+                            if (a2dpDevice != null) {
+                                // StateFlowを更新
+                                val currentInfo = _headphoneInfo.value
+                                if (currentInfo.isConnected && currentInfo.deviceName != a2dpDevice.name) {
+                                    _headphoneInfo.value = currentInfo.copy(deviceName = a2dpDevice.name)
+                                }
+                            }
                             adapter.closeProfileProxy(BluetoothProfile.A2DP, proxy)
                         }
                     } catch (_: SecurityException) {
@@ -224,15 +319,8 @@ class SpatialAudioController(private val context: Context) {
                 override fun onServiceDisconnected(profile: Int) {}
             }, BluetoothProfile.A2DP)
             
-            // 直接ボンディングされたデバイスから取得（フォールバック）
-            adapter.bondedDevices?.firstOrNull { device ->
-                try {
-                    val method = device.javaClass.getMethod("isConnected")
-                    method.invoke(device) as? Boolean ?: false
-                } catch (_: Exception) {
-                    false
-                }
-            }?.name
+            // 同期的にはnullを返し、非同期で更新される
+            null
         } catch (_: SecurityException) {
             null
         } catch (_: Exception) {

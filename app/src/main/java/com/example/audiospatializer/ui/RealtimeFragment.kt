@@ -44,11 +44,11 @@ class RealtimeFragment : Fragment() {
     private lateinit var btnPlayPause: FloatingActionButton
     private lateinit var btnStop: MaterialButton
     private lateinit var statusCard: MaterialCardView
+    private lateinit var placeholderCard: MaterialCardView
     private lateinit var statusText: TextView
     private lateinit var fileNameText: TextView
     private lateinit var spatializerStatusText: TextView
     private lateinit var headTrackingStatusText: TextView
-    private lateinit var hintText: TextView
     private lateinit var warningCard: MaterialCardView
     private lateinit var warningText: TextView
     private lateinit var pulseIndicator: View
@@ -105,11 +105,11 @@ class RealtimeFragment : Fragment() {
         btnPlayPause = view.findViewById(R.id.btnPlayPause)
         btnStop = view.findViewById(R.id.btnStop)
         statusCard = view.findViewById(R.id.statusCard)
+        placeholderCard = view.findViewById(R.id.placeholderCard)
         statusText = view.findViewById(R.id.statusText)
         fileNameText = view.findViewById(R.id.fileNameText)
         spatializerStatusText = view.findViewById(R.id.spatializerStatusText)
         headTrackingStatusText = view.findViewById(R.id.headTrackingStatusText)
-        hintText = view.findViewById(R.id.hintText)
         warningCard = view.findViewById(R.id.warningCard)
         warningText = view.findViewById(R.id.warningText)
         pulseIndicator = view.findViewById(R.id.pulseIndicator)
@@ -241,15 +241,15 @@ class RealtimeFragment : Fragment() {
     private fun updateUI(state: RealtimePlayerService.PlayerState) {
         when (state) {
             RealtimePlayerService.PlayerState.IDLE -> {
+                placeholderCard.visibility = View.VISIBLE
                 statusCard.visibility = View.GONE
-                hintText.visibility = View.VISIBLE
                 btnPlayPause.isEnabled = false
                 btnStop.isEnabled = false
                 stopPulseAnimation()
             }
             RealtimePlayerService.PlayerState.LOADED -> {
+                placeholderCard.visibility = View.GONE
                 statusCard.visibility = View.VISIBLE
-                hintText.visibility = View.GONE
                 statusText.text = "準備完了"
                 btnPlayPause.isEnabled = true
                 btnPlayPause.setImageResource(R.drawable.ic_play_24)
@@ -257,8 +257,8 @@ class RealtimeFragment : Fragment() {
                 stopPulseAnimation()
             }
             RealtimePlayerService.PlayerState.PLAYING -> {
+                placeholderCard.visibility = View.GONE
                 statusCard.visibility = View.VISIBLE
-                hintText.visibility = View.GONE
                 statusText.text = "再生中 - 5.1ch空間化"
                 btnPlayPause.isEnabled = true
                 btnPlayPause.setImageResource(R.drawable.ic_pause_24)

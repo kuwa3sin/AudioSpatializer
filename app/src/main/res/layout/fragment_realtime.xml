@@ -49,7 +49,7 @@
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:src="@drawable/ic_surround_24"
+                            android:src="@drawable/ic_spatial_audio_24"
                             android:padding="18dp"
                             app:tint="?attr/colorOnPrimary" />
 
@@ -65,35 +65,23 @@
                         android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold"
-                        app:layout_constraintTop_toTopOf="@id/iconContainer"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@id/iconContainer"
-                        app:layout_constraintEnd_toEndOf="parent" />
-
-                    <!-- サブタイトル -->
-                    <TextView
-                        android:id="@+id/subtitleText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="4dp"
-                        android:text="5.1ch 空間オーディオ"
-                        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
-                        android:textColor="?attr/colorPrimary"
-                        app:layout_constraintTop_toBottomOf="@id/titleText"
-                        app:layout_constraintStart_toEndOf="@id/iconContainer"
-                        app:layout_constraintEnd_toEndOf="parent" />
+                        app:layout_constraintTop_toTopOf="@id/iconContainer" />
 
                     <!-- 説明文 -->
                     <TextView
                         android:id="@+id/descText"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="4dp"
                         android:text="@string/realtime_description"
-                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:lineSpacingMultiplier="1.4"
-                        app:layout_constraintTop_toBottomOf="@id/iconContainer" />
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/iconContainer"
+                        app:layout_constraintTop_toBottomOf="@id/titleText" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -225,6 +213,63 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- ファイル未選択時のプレースホルダーカード -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/placeholderCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="visible"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                style="@style/Widget.Material3.CardView.Outlined">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="32dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_music_note_24"
+                            android:padding="16dp"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/placeholder_no_file_selected"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/placeholder_select_file_hint"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- ステータスカード -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/statusCard"
@@ -237,7 +282,7 @@
                 app:strokeWidth="1dp"
                 app:strokeColor="?attr/colorOutlineVariant"
                 style="@style/Widget.Material3.CardView.Outlined"
-                tools:visibility="visible">
+                tools:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -295,7 +340,7 @@
                             style="@style/Widget.Material3.Chip.Assist"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Spatializer"
+                            android:text="Spatial Audio"
                             app:chipIcon="@drawable/ic_spatial_audio_24"
                             app:chipIconTint="?attr/colorPrimary" />
 
@@ -305,7 +350,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Head Tracking"
-                            app:chipIcon="@drawable/ic_headphones_24"
+                            app:chipIcon="@drawable/ic_spatial_tracking_24"
                             app:chipIconTint="?attr/colorPrimary" />
 
                     </com.google.android.material.chip.ChipGroup>
@@ -353,73 +398,6 @@
                         android:valueFrom="0.0"
                         android:valueTo="1.0"
                         android:value="0.7" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ヒントテキスト -->
-            <TextView
-                android:id="@+id/hintText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginHorizontal="8dp"
-                android:text="@string/realtime_hint_new"
-                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:gravity="center"
-                android:lineSpacingMultiplier="1.5" />
-
-            <!-- 仕組み説明（折りたたみ可能） -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/infoCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutlineVariant"
-                style="@style/Widget.Material3.CardView.Outlined">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_info_24"
-                            app:tint="?attr/colorPrimary" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="@string/realtime_how_it_works_title"
-                            android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
-                            android:textColor="?attr/colorOnSurface" />
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="@string/realtime_how_it_works"
-                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:lineSpacingMultiplier="1.5" />
 
                 </LinearLayout>
 

@@ -21,8 +21,8 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/musicIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:src="@drawable/ic_music_note_24"
             android:background="?attr/colorSecondaryContainer"
             app:tint="?attr/colorOnSecondaryContainer"

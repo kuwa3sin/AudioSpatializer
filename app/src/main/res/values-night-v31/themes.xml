@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Dynamic Color対応テーマ - ダークモード (Android 12以上) -->
+    <!-- スマホの壁紙から自動生成されるカラーパレットを使用 -->
+    <style name="Base.Theme.AudioSpatializer" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Dynamic Colorを有効化 -->
+        <item name="android:colorAccent">@android:color/system_accent1_200</item>
+        
+        <!-- Primary colors from system (dark mode) -->
+        <item name="colorPrimary">@android:color/system_accent1_200</item>
+        <item name="colorPrimaryContainer">@android:color/system_accent1_700</item>
+        <item name="colorOnPrimary">@android:color/system_accent1_800</item>
+        <item name="colorOnPrimaryContainer">@android:color/system_accent1_100</item>
+        
+        <!-- Secondary colors from system (dark mode) -->
+        <item name="colorSecondary">@android:color/system_accent2_200</item>
+        <item name="colorSecondaryContainer">@android:color/system_accent2_700</item>
+        <item name="colorOnSecondary">@android:color/system_accent2_800</item>
+        <item name="colorOnSecondaryContainer">@android:color/system_accent2_100</item>
+        
+        <!-- Tertiary colors from system (dark mode) -->
+        <item name="colorTertiary">@android:color/system_accent3_200</item>
+        <item name="colorTertiaryContainer">@android:color/system_accent3_700</item>
+        <item name="colorOnTertiary">@android:color/system_accent3_800</item>
+        <item name="colorOnTertiaryContainer">@android:color/system_accent3_100</item>
+        
+        <!-- Surface colors from system (dark mode) -->
+        <item name="colorSurface">@android:color/system_neutral1_900</item>
+        <item name="colorSurfaceVariant">@android:color/system_neutral2_700</item>
+        <item name="colorOnSurface">@android:color/system_neutral1_100</item>
+        <item name="colorOnSurfaceVariant">@android:color/system_neutral2_200</item>
+        
+        <!-- Outline -->
+        <item name="colorOutline">@android:color/system_neutral2_400</item>
+    </style>
+
+    <style name="Theme.AudioSpatializer" parent="Base.Theme.AudioSpatializer" />
+</resources>

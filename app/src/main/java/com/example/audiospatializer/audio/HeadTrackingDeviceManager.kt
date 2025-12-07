@@ -81,7 +81,8 @@ class HeadTrackingDeviceManager(private val context: Context) {
         val isSpatializerAvailable: Boolean = false,
         val isSpatializerEnabled: Boolean = false,
         val isHeadTrackerAvailable: Boolean = false,
-        val immersiveAudioLevel: Int = 0
+        val immersiveAudioLevel: Int = 0,
+        val speakerSpatialAudioSupported: Boolean = false
     )
     
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -99,6 +100,7 @@ class HeadTrackingDeviceManager(private val context: Context) {
     fun refreshStatus() {
         val connectedDevice = findConnectedSupportedDevice()
         val spatializerStatus = checkSpatializerStatus()
+        val speakerSupport = checkSpeakerSpatialAudioSupport()
         
         _statusFlow.value = HeadTrackingStatus(
             isDeviceConnected = connectedDevice != null,
@@ -108,7 +110,8 @@ class HeadTrackingDeviceManager(private val context: Context) {
             isSpatializerAvailable = spatializerStatus.first,
             isSpatializerEnabled = spatializerStatus.second,
             isHeadTrackerAvailable = spatializerStatus.third,
-            immersiveAudioLevel = spatializerStatus.fourth
+            immersiveAudioLevel = spatializerStatus.fourth,
+            speakerSpatialAudioSupported = speakerSupport
         )
         
         Log.d(TAG, "Status updated: ${_statusFlow.value}")
@@ -162,6 +165,39 @@ class HeadTrackingDeviceManager(private val context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get spatializer status", e)
             Quadruple(false, false, false, 0)
+        }
+    }
+    
+    /**
+     * スピーカー空間オーディオ対応チェック (API 33+)
+     */
+    private fun checkSpeakerSpatialAudioSupport(): Boolean {
+        return try {
+            val spatializer = audioManager.spatializer
+            if (!spatializer.isAvailable) return false
+            
+            // 内蔵スピーカーを検索
+            val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            val speaker = devices.find { 
+                it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER && it.isSink 
+            } ?: return false
+            
+            // Spatializerが5.1chオーディオをスピーカーで空間化できるかチェック
+            val audioFormat = android.media.AudioFormat.Builder()
+                .setEncoding(android.media.AudioFormat.ENCODING_PCM_16BIT)
+                .setSampleRate(48000)
+                .setChannelMask(android.media.AudioFormat.CHANNEL_OUT_5POINT1)
+                .build()
+                
+            val audioAttributes = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+            
+            spatializer.canBeSpatialized(audioAttributes, audioFormat)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to check speaker spatial audio support", e)
+            false
         }
     }
     

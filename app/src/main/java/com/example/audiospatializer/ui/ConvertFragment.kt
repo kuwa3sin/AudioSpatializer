@@ -63,6 +63,9 @@ class ConvertFragment : Fragment() {
     private lateinit var outputModeDescription: TextView
     private lateinit var outputModeCard: MaterialCardView
     private lateinit var progressCard: MaterialCardView
+    private lateinit var convertPlaceholderCard: MaterialCardView
+    private lateinit var fileSelectionCard: MaterialCardView
+    private lateinit var actionButtonsContainer: MaterialCardView
     private lateinit var progressBar: LinearProgressIndicator
     private lateinit var progressText: TextView
     private lateinit var statusIcon: ImageView
@@ -70,7 +73,7 @@ class ConvertFragment : Fragment() {
     private lateinit var btnCancel: MaterialButton
     
     private lateinit var outputModeItems: List<OutputModeItem>
-    private var selectedOutputMode: AudioProcessor.OutputMode = AudioProcessor.OutputMode.HRTF_SURROUND_5_1_IMMERSIVE
+    private var selectedOutputMode: AudioProcessor.OutputMode? = null
 
     // 状態管理（画面遷移を跨いで保持）
     private var selectedUri: Uri? = null
@@ -231,6 +234,9 @@ class ConvertFragment : Fragment() {
         outputModeDescription = view.findViewById(R.id.outputModeDescription)
         outputModeCard = view.findViewById(R.id.outputModeCard)
         progressCard = view.findViewById(R.id.progressCard)
+        convertPlaceholderCard = view.findViewById(R.id.convertPlaceholderCard)
+        fileSelectionCard = view.findViewById(R.id.fileSelectionCard)
+        actionButtonsContainer = view.findViewById(R.id.actionButtonsContainer)
         progressBar = view.findViewById(R.id.progressBar)
         progressText = view.findViewById(R.id.progressText)
         statusIcon = view.findViewById(R.id.statusIcon)
@@ -249,22 +255,6 @@ class ConvertFragment : Fragment() {
                 getString(R.string.output_mode_fast),
                 getString(R.string.output_mode_fast_desc)
             )
-            // 以下はマスク（将来的に復活可能）
-            // OutputModeItem(
-            //     AudioProcessor.OutputMode.HRTF_SURROUND_7_1,
-            //     getString(R.string.output_mode_71),
-            //     getString(R.string.output_mode_71_desc)
-            // ),
-            // OutputModeItem(
-            //     AudioProcessor.OutputMode.HRTF_BINAURAL,
-            //     getString(R.string.output_mode_binaural),
-            //     getString(R.string.output_mode_binaural_desc)
-            // ),
-            // OutputModeItem(
-            //     AudioProcessor.OutputMode.HRTF_SURROUND_5_1,
-            //     getString(R.string.output_mode_surround),
-            //     getString(R.string.output_mode_surround_desc)
-            // )
         )
         
         setupOutputModeDropdown()
@@ -278,18 +268,20 @@ class ConvertFragment : Fragment() {
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, displayNames)
         outputModeAutoComplete.setAdapter(adapter)
         
-        // デフォルト選択
-        if (outputModeItems.isNotEmpty()) {
-            outputModeAutoComplete.setText(outputModeItems[0].displayName, false)
-            outputModeDescription.text = outputModeItems[0].description
-            selectedOutputMode = outputModeItems[0].mode
-        }
+        // デフォルトは未選択状態（ヒント表示）
+        outputModeAutoComplete.setText("", false)
+        outputModeDescription.text = ""
+        selectedOutputMode = null
+        outputModeDropdown.hint = getString(R.string.output_mode_hint)
         
         // 選択変更時
         outputModeAutoComplete.setOnItemClickListener { _, _, position, _ ->
             val item = outputModeItems[position]
             outputModeDescription.text = item.description
             selectedOutputMode = item.mode
+            // 選択後はヒントを非表示
+            outputModeDropdown.hint = null
+            updateUIState()
         }
     }
 
@@ -305,12 +297,18 @@ class ConvertFragment : Fragment() {
      */
     private fun updateUIState() {
         val hasFile = selectedUri != null
+        val hasModeSelected = selectedOutputMode != null
         
         // ファイル選択エリア
+        fileSelectionCard.visibility = if (hasFile) View.VISIBLE else View.GONE
         selectedFileContainer.visibility = if (hasFile) View.VISIBLE else View.GONE
         
-        // ボタン状態
-        btnStart.isEnabled = hasFile && !isConverting
+        // プレースホルダーとプログレスカードの切り替え
+        convertPlaceholderCard.visibility = if (hasFile || isConverting) View.GONE else View.VISIBLE
+        progressCard.visibility = if (hasFile || isConverting) View.VISIBLE else View.GONE
+        
+        // ボタン状態（ファイル選択 + モード選択が必要）
+        btnStart.isEnabled = hasFile && hasModeSelected && !isConverting
         btnCancel.isEnabled = isConverting
         btnPick.isEnabled = !isConverting
         btnClearFile.isEnabled = !isConverting
@@ -404,7 +402,7 @@ class ConvertFragment : Fragment() {
     /**
      * 選択された出力モードを取得
      */
-    private fun getSelectedOutputMode(): AudioProcessor.OutputMode {
+    private fun getSelectedOutputMode(): AudioProcessor.OutputMode? {
         return selectedOutputMode
     }
 
@@ -413,7 +411,7 @@ class ConvertFragment : Fragment() {
      */
     private fun startConversion() {
         val uri = selectedUri ?: return
-        val selectedMode = getSelectedOutputMode()
+        val selectedMode = getSelectedOutputMode() ?: return
         
         // 状態を更新
         _conversionProgress.value = ConversionState(
@@ -467,7 +465,11 @@ class ConvertFragment : Fragment() {
                 } else {
                     getString(R.string.conversion_failed)
                 }
-                view?.let { Snackbar.make(it, message, Snackbar.LENGTH_LONG).show() }
+                view?.let { 
+                    Snackbar.make(it, message, Snackbar.LENGTH_LONG)
+                        .setAnchorView(actionButtonsContainer)
+                        .show() 
+                }
             }
             
             activeJob = null
@@ -497,7 +499,9 @@ class ConvertFragment : Fragment() {
         updateUIState()
         
         view?.let { 
-            Snackbar.make(it, getString(R.string.status_cancelled), Snackbar.LENGTH_SHORT).show() 
+            Snackbar.make(it, getString(R.string.status_cancelled), Snackbar.LENGTH_SHORT)
+                .setAnchorView(actionButtonsContainer)
+                .show() 
         }
     }
 

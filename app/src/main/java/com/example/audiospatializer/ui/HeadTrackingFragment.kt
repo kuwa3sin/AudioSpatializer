@@ -11,7 +11,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.audiospatializer.R
 import com.example.audiospatializer.audio.HeadTrackingDeviceManager
 import com.example.audiospatializer.databinding.FragmentHeadTrackingBinding
@@ -30,7 +29,6 @@ class HeadTrackingFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var deviceManager: HeadTrackingDeviceManager
-    private lateinit var deviceListAdapter: SupportedDeviceAdapter
     private var listenersRegistered = false
 
     private val bluetoothPermissionLauncher = registerForActivityResult(
@@ -74,24 +72,17 @@ class HeadTrackingFragment : Fragment() {
     }
 
     private fun setupUI() {
-        // デバイスリストのセットアップ
-        deviceListAdapter = SupportedDeviceAdapter(deviceManager.getSupportedDevicesList())
-        binding.recyclerViewDevices.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = deviceListAdapter
-        }
-
         // 更新ボタン
         binding.buttonRefresh.setOnClickListener {
             checkPermissionsAndRefresh()
         }
 
         // API情報表示
-        binding.textApiLevel.text = "Android API: ${android.os.Build.VERSION.SDK_INT} (${android.os.Build.VERSION.RELEASE})"
+        binding.textApiLevel.text = "Android ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})"
         
         // API 33+ 前提なので常に対応
-        binding.textSpatializerSupport.text = "Spatializer API: ✓ 対応"
-        binding.textHeadTrackerSupport.text = "HeadTracker API: ✓ 対応"
+        binding.textSpatializerSupport.text = getString(R.string.status_supported)
+        binding.textHeadTrackerSupport.text = getString(R.string.status_supported)
     }
 
     private fun checkPermissionsAndRefresh() {
@@ -132,76 +123,101 @@ class HeadTrackingFragment : Fragment() {
         // 接続デバイス情報
         if (status.isDeviceConnected) {
             binding.cardConnectedDevice.visibility = View.VISIBLE
-            binding.textNoDevice.visibility = View.GONE
-            binding.textDeviceName.text = status.connectedDeviceName ?: "不明なデバイス"
-            binding.textDeviceManufacturer.text = status.connectedDeviceManufacturer ?: ""
+            binding.cardNoDevice.visibility = View.GONE
+            binding.textDeviceName.text = status.connectedDeviceName ?: getString(R.string.headphone_unknown_device)
             
-            val headTrackingText = if (status.isHeadTrackingSupported) {
-                "✓ ヘッドトラッキング対応"
+            // バッジの表示制御
+            if (status.isHeadTrackingSupported) {
+                binding.badgeSpatialAudio.text = getString(R.string.spatial_audio_supported)
+                binding.badgeSpatialAudio.setBackgroundResource(R.drawable.bg_badge_enabled)
+                binding.badgeHeadTracking.text = getString(R.string.head_tracking_supported)
+                binding.badgeHeadTracking.setBackgroundResource(R.drawable.bg_badge_enabled)
             } else {
-                "✗ ヘッドトラッキング非対応"
+                binding.badgeSpatialAudio.text = getString(R.string.spatial_audio_supported)
+                binding.badgeSpatialAudio.setBackgroundResource(R.drawable.bg_badge_enabled)
+                binding.badgeHeadTracking.text = getString(R.string.head_tracking_not_supported)
+                binding.badgeHeadTracking.setBackgroundResource(R.drawable.bg_badge_disabled)
             }
-            binding.textHeadTrackingSupport.text = headTrackingText
-            
-            // 背景色を変更
-            val backgroundColor = if (status.isHeadTrackingSupported) {
-                ContextCompat.getColor(requireContext(), android.R.color.holo_green_light)
-            } else {
-                ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light)
-            }
-            binding.cardConnectedDevice.setCardBackgroundColor(backgroundColor)
         } else {
             binding.cardConnectedDevice.visibility = View.GONE
-            binding.textNoDevice.visibility = View.VISIBLE
-            binding.textNoDevice.text = getString(R.string.head_tracking_status_no_device)
+            binding.cardNoDevice.visibility = View.VISIBLE
         }
 
-        // Spatializer状態
+        // スピーカー空間オーディオ対応
+        binding.cardSpeakerSpatial.visibility = if (status.speakerSpatialAudioSupported) View.VISIBLE else View.GONE
+
+        // Spatializer状態（アイコン付き）
         binding.textSpatializerAvailable.text = if (status.isSpatializerAvailable) {
-            "✓ Spatializer利用可能"
+            getString(R.string.spatializer_available)
         } else {
-            "✗ Spatializer利用不可"
+            getString(R.string.spatializer_unavailable)
         }
+        updateStatusIcon(binding.statusSpatializerAvailable, status.isSpatializerAvailable)
 
         binding.textSpatializerEnabled.text = if (status.isSpatializerEnabled) {
-            "✓ Spatializer有効"
+            getString(R.string.spatializer_enabled)
         } else {
-            "✗ Spatializer無効（設定で有効化してください）"
+            getString(R.string.spatializer_disabled)
         }
+        updateStatusIcon(binding.statusSpatializerEnabled, status.isSpatializerEnabled)
 
         binding.textHeadTrackerAvailable.text = if (status.isHeadTrackerAvailable) {
-            "✓ システムヘッドトラッカー利用可能"
+            getString(R.string.head_tracker_available)
         } else {
-            "✗ システムヘッドトラッカー利用不可"
+            getString(R.string.head_tracker_unavailable)
         }
+        updateStatusIcon(binding.statusHeadTrackerAvailable, status.isHeadTrackerAvailable)
 
+        // イマーシブレベル
         val levelText = when (status.immersiveAudioLevel) {
-            1 -> "マルチチャンネル空間化対応"
-            0 -> "空間化非対応"
-            -1 -> "その他の空間化モード"
-            else -> "不明"
+            1 -> getString(R.string.immersive_multichannel)
+            0 -> getString(R.string.immersive_none)
+            -1 -> getString(R.string.immersive_other)
+            else -> getString(R.string.immersive_unknown)
         }
-        binding.textImmersiveLevel.text = "イマーシブオーディオレベル: $levelText"
+        binding.textImmersiveLevel.text = levelText
 
         // 総合ステータス
-        val overallStatus = when {
+        updateOverallStatus(status)
+    }
+    
+    private fun updateStatusIcon(iconView: android.widget.ImageView, isPositive: Boolean) {
+        if (isPositive) {
+            iconView.setImageResource(R.drawable.ic_check_circle_24)
+            iconView.imageTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_primary)
+        } else {
+            iconView.setImageResource(R.drawable.ic_spatial_audio_off_24)
+            iconView.imageTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_error)
+        }
+    }
+    
+    private fun updateOverallStatus(status: HeadTrackingDeviceManager.HeadTrackingStatus) {
+        when {
             status.isHeadTrackerAvailable -> {
-                "🎧 ヘッドトラッキング空間オーディオが利用可能です"
+                binding.textOverallStatus.text = getString(R.string.overall_status_ready)
+                binding.textOverallHint.text = getString(R.string.overall_status_ready_hint)
+                binding.statusIcon.setImageResource(R.drawable.ic_spatial_tracking_24)
+                binding.statusIcon.backgroundTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_primary_container)
             }
             status.isSpatializerEnabled && status.isSpatializerAvailable -> {
-                "🔊 空間オーディオが利用可能です（ヘッドトラッキングなし）"
+                binding.textOverallStatus.text = getString(R.string.overall_status_spatial_only)
+                binding.textOverallHint.text = getString(R.string.overall_status_spatial_only_hint)
+                binding.statusIcon.setImageResource(R.drawable.ic_spatial_audio_24)
+                binding.statusIcon.backgroundTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_secondary_container)
             }
-            status.isDeviceConnected && status.isHeadTrackingSupported -> {
-                "⚠️ 対応デバイス接続中ですが、システム設定でSpatializerを有効にしてください"
-            }
-            status.isDeviceConnected -> {
-                "ℹ️ 接続中のデバイスはヘッドトラッキング非対応です"
+            status.isDeviceConnected && !status.isSpatializerEnabled -> {
+                binding.textOverallStatus.text = getString(R.string.overall_status_disabled)
+                binding.textOverallHint.text = getString(R.string.overall_status_disabled_hint)
+                binding.statusIcon.setImageResource(R.drawable.ic_spatial_audio_off_24)
+                binding.statusIcon.backgroundTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_error_container)
             }
             else -> {
-                "📱 対応Bluetoothデバイスを接続してください"
+                binding.textOverallStatus.text = getString(R.string.overall_status_no_device)
+                binding.textOverallHint.text = getString(R.string.overall_status_no_device_hint)
+                binding.statusIcon.setImageResource(R.drawable.ic_headphones_off_24)
+                binding.statusIcon.backgroundTintList = ContextCompat.getColorStateList(requireContext(), com.google.android.material.R.color.m3_sys_color_dynamic_light_surface_variant)
             }
         }
-        binding.textOverallStatus.text = overallStatus
     }
 
     override fun onResume() {

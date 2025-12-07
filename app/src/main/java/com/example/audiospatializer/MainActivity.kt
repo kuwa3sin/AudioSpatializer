@@ -1,15 +1,16 @@
 package com.example.audiospatializer
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -21,6 +22,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 /**
@@ -33,54 +35,60 @@ import kotlinx.coroutines.launch
  * - Musics: 変換済み音楽ファイルの再生
  * - Realtime: リアルタイム5.1ch空間化再生
  * 
- * 機能:
- * - Edge-to-Edge UI対応
- * - Material 3 Toolbarによるナビゲーション
- * - オプションメニューからヘッドトラッキング画面へのアクセス
- * - ヘッドフォン接続状態の表示
+ * デバイスカード表示優先順位:
+ * 1. ヘッドホン接続時: ヘッドホン名 + 機能バッジ
+ * 2. トランスオーラル対応 & ヘッドホン未接続: スマホ名 + トランスオーラル対応
+ * 3. トランスオーラル非対応 & ヘッドホン未接続: 未接続メッセージ + 接続ボタン
  */
 class MainActivity : AppCompatActivity() {
     
-    // Headphone info views
-    private lateinit var headphoneCard: MaterialCardView
-    private lateinit var noHeadphoneCard: MaterialCardView
-    private lateinit var headphoneIcon: ImageView
-    private lateinit var headphoneName: TextView
+    // デバイスカード
+    private lateinit var deviceCard: MaterialCardView
+    private lateinit var deviceIcon: ImageView
+    private lateinit var deviceName: TextView
+    private lateinit var badgeContainer: LinearLayout
     private lateinit var spatialAudioBadge: TextView
     private lateinit var headTrackingBadge: TextView
-    private lateinit var btnOpenBluetooth: MaterialButton
+    private lateinit var transauralBadge: TextView
+    private lateinit var btnDeviceAction: MaterialButton
     
     // Spatial Audio Controller
     private lateinit var spatialController: SpatialAudioController
     
-    /**
-     * アクティビティ作成時の処理
-     * 
-     * レイアウト設定、ツールバー設定、ViewPager2とTabLayoutの連携を行う
-     */
+    // 現在の状態
+    private var currentHeadphoneInfo: SpatialAudioController.HeadphoneInfo? = null
+    private var currentSpeakerInfo: SpatialAudioController.SpeakerSpatialInfo? = null
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Edge-to-Edge表示を有効化（ステータスバー・ナビゲーションバー透過）
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Material Toolbarをアクションバーとして設定
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         
-        // Headphone info views初期化
-        headphoneCard = findViewById(R.id.headphoneCard)
-        noHeadphoneCard = findViewById(R.id.noHeadphoneCard)
-        headphoneIcon = findViewById(R.id.headphoneIcon)
-        headphoneName = findViewById(R.id.headphoneName)
+        // デバイスカード初期化
+        deviceCard = findViewById(R.id.deviceCard)
+        deviceIcon = findViewById(R.id.deviceIcon)
+        deviceName = findViewById(R.id.deviceName)
+        badgeContainer = findViewById(R.id.badgeContainer)
         spatialAudioBadge = findViewById(R.id.spatialAudioBadge)
         headTrackingBadge = findViewById(R.id.headTrackingBadge)
-        btnOpenBluetooth = findViewById(R.id.btnOpenBluetooth)
+        transauralBadge = findViewById(R.id.transauralBadge)
+        btnDeviceAction = findViewById(R.id.btnDeviceAction)
         
-        // Bluetooth設定を開くボタン
-        btnOpenBluetooth.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+        // カードタップでデバイス情報画面へ遷移
+        deviceCard.setOnClickListener {
+            startActivity(Intent(this, HeadTrackingActivity::class.java))
+        }
+        
+        // バッジタップでSpatializer設定へ遷移
+        spatialAudioBadge.setOnClickListener {
+            openSpatializerSettings()
+        }
+        headTrackingBadge.setOnClickListener {
+            openSpatializerSettings()
         }
         
         // SpatialAudioController初期化
@@ -93,19 +101,22 @@ class MainActivity : AppCompatActivity() {
         // TabLayoutとViewPager2を連携
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            // 各タブのテキストを設定
             tab.text = when (position) {
-                0 -> getString(R.string.tab_convert)   // 変換タブ
-                1 -> getString(R.string.tab_musics)    // 音楽タブ
-                else -> getString(R.string.tab_realtime) // リアルタイムタブ
+                0 -> getString(R.string.tab_convert)
+                1 -> getString(R.string.tab_musics)
+                else -> getString(R.string.tab_realtime)
             }
         }.attach()
         
-        // ヘッドホン接続状態の監視
+        // ヘッドホンとスピーカー情報を組み合わせて監視
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                spatialController.headphoneInfo.collect { headphone ->
-                    updateHeadphoneUI(headphone)
+                spatialController.headphoneInfo.combine(spatialController.speakerSpatialInfo) { headphone, speaker ->
+                    Pair(headphone, speaker)
+                }.collect { (headphone, speaker) ->
+                    currentHeadphoneInfo = headphone
+                    currentSpeakerInfo = speaker
+                    updateDeviceCard(headphone, speaker)
                 }
             }
         }
@@ -115,6 +126,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         spatialController.refreshState()
         spatialController.refreshHeadphoneInfo()
+        spatialController.refreshSpeakerInfo()
     }
     
     override fun onDestroy() {
@@ -123,60 +135,152 @@ class MainActivity : AppCompatActivity() {
     }
     
     /**
-     * ヘッドフォンUI更新
+     * デバイスカードを更新
+     * 
+     * 優先順位:
+     * 1. ヘッドホン接続時
+     * 2. トランスオーラル対応 & ヘッドホン未接続
+     * 3. トランスオーラル非対応 & ヘッドホン未接続
      */
-    private fun updateHeadphoneUI(headphone: SpatialAudioController.HeadphoneInfo) {
-        if (headphone.isConnected) {
-            headphoneCard.visibility = View.VISIBLE
-            noHeadphoneCard.visibility = View.GONE
-            headphoneName.text = headphone.deviceName ?: getString(R.string.headphone_unknown_device)
-            headphoneIcon.setImageResource(R.drawable.ic_headphones_24)
-            
-            // Spatial Audio対応状況
-            if (headphone.supportsSpatialAudio) {
-                spatialAudioBadge.text = getString(R.string.spatial_audio_supported)
-                spatialAudioBadge.setBackgroundResource(R.drawable.bg_badge_enabled)
-            } else {
-                spatialAudioBadge.text = getString(R.string.spatial_audio_not_supported)
-                spatialAudioBadge.setBackgroundResource(R.drawable.bg_badge_disabled)
+    private fun updateDeviceCard(
+        headphone: SpatialAudioController.HeadphoneInfo,
+        speaker: SpatialAudioController.SpeakerSpatialInfo
+    ) {
+        when {
+            // ケース1: ヘッドホン接続時
+            headphone.isConnected -> {
+                showHeadphoneConnectedState(headphone)
             }
-            
-            // Head Tracking対応状況
-            if (headphone.supportsHeadTracking) {
-                headTrackingBadge.text = getString(R.string.head_tracking_supported)
-                headTrackingBadge.setBackgroundResource(R.drawable.bg_badge_enabled)
-            } else {
-                headTrackingBadge.text = getString(R.string.head_tracking_not_supported)
-                headTrackingBadge.setBackgroundResource(R.drawable.bg_badge_disabled)
+            // ケース2: トランスオーラル対応 & ヘッドホン未接続
+            speaker.supportsSpatialAudio -> {
+                showTransauralSupportedState(speaker)
             }
-        } else {
-            headphoneCard.visibility = View.GONE
-            noHeadphoneCard.visibility = View.VISIBLE
+            // ケース3: トランスオーラル非対応 & ヘッドホン未接続
+            else -> {
+                showNoDeviceState()
+            }
         }
     }
     
     /**
-     * オプションメニュー作成
+     * ケース1: ヘッドホン接続状態の表示
      */
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
+    private fun showHeadphoneConnectedState(headphone: SpatialAudioController.HeadphoneInfo) {
+        // アイコン: ヘッドホン
+        deviceIcon.setImageResource(R.drawable.ic_headphones_24)
+        deviceIcon.backgroundTintList = ContextCompat.getColorStateList(this, 
+            com.google.android.material.R.color.m3_sys_color_dynamic_light_primary_container)
+        deviceIcon.imageTintList = ContextCompat.getColorStateList(this,
+            com.google.android.material.R.color.m3_sys_color_dynamic_light_on_primary_container)
+        
+        // デバイス名
+        deviceName.text = headphone.deviceName ?: getString(R.string.headphone_unknown_device)
+        
+        // トランスオーラルバッジは非表示
+        transauralBadge.visibility = View.GONE
+        
+        // 空間オーディオバッジ
+        spatialAudioBadge.visibility = View.VISIBLE
+        if (headphone.supportsSpatialAudio) {
+            spatialAudioBadge.text = getString(R.string.badge_spatial_audio)
+            spatialAudioBadge.setBackgroundResource(R.drawable.bg_badge_enabled)
+            spatialAudioBadge.isClickable = true
+        } else {
+            spatialAudioBadge.text = getString(R.string.spatial_audio_not_supported)
+            spatialAudioBadge.setBackgroundResource(R.drawable.bg_badge_disabled)
+            spatialAudioBadge.isClickable = false
+        }
+        
+        // ヘッドトラッキングバッジ
+        headTrackingBadge.visibility = View.VISIBLE
+        if (headphone.supportsHeadTracking) {
+            headTrackingBadge.text = getString(R.string.badge_head_tracking)
+            headTrackingBadge.setBackgroundResource(R.drawable.bg_badge_enabled)
+            headTrackingBadge.isClickable = true
+        } else {
+            headTrackingBadge.text = getString(R.string.head_tracking_not_supported)
+            headTrackingBadge.setBackgroundResource(R.drawable.bg_badge_disabled)
+            headTrackingBadge.isClickable = false
+        }
+        
+        // ボタン: 設定
+        btnDeviceAction.text = getString(R.string.btn_settings)
+        btnDeviceAction.setOnClickListener {
+            startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+        }
     }
     
     /**
-     * オプションメニュー項目選択時の処理
-     * 
-     * @param item 選択されたメニュー項目
-     * @return 処理が完了した場合true
+     * ケース2: トランスオーラル対応 & ヘッドホン未接続
      */
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_head_tracking -> {
-                // ヘッドトラッキング設定画面へ遷移
-                startActivity(Intent(this, HeadTrackingActivity::class.java))
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
+    private fun showTransauralSupportedState(speaker: SpatialAudioController.SpeakerSpatialInfo) {
+        // アイコン: スピーカー
+        deviceIcon.setImageResource(R.drawable.ic_speaker_24)
+        deviceIcon.backgroundTintList = ContextCompat.getColorStateList(this,
+            com.google.android.material.R.color.m3_sys_color_dynamic_light_tertiary_container)
+        deviceIcon.imageTintList = ContextCompat.getColorStateList(this,
+            com.google.android.material.R.color.m3_sys_color_dynamic_light_on_tertiary_container)
+        
+        // デバイス名: スマホ名
+        deviceName.text = "${Build.MANUFACTURER} ${Build.MODEL}"
+        
+        // 空間オーディオ・ヘッドトラッキングバッジは非表示
+        spatialAudioBadge.visibility = View.GONE
+        headTrackingBadge.visibility = View.GONE
+        
+        // トランスオーラルバッジを表示
+        transauralBadge.visibility = View.VISIBLE
+        transauralBadge.text = getString(R.string.speaker_spatial_audio_supported)
+        transauralBadge.setBackgroundResource(R.drawable.bg_badge_enabled)
+        
+        // ボタン: 設定
+        btnDeviceAction.text = getString(R.string.btn_settings)
+        btnDeviceAction.setOnClickListener {
+            startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+        }
+    }
+    
+    /**
+     * ケース3: トランスオーラル非対応 & ヘッドホン未接続
+     */
+    private fun showNoDeviceState() {
+        // アイコン: ヘッドホンオフ
+        deviceIcon.setImageResource(R.drawable.ic_headphones_off_24)
+        deviceIcon.backgroundTintList = ContextCompat.getColorStateList(this,
+            com.google.android.material.R.color.m3_sys_color_dynamic_light_error_container)
+        deviceIcon.imageTintList = ContextCompat.getColorStateList(this,
+            com.google.android.material.R.color.m3_sys_color_dynamic_light_on_error_container)
+        
+        // デバイス名
+        deviceName.text = getString(R.string.no_headphone_connected)
+        
+        // 空間オーディオ・ヘッドトラッキングバッジは非表示
+        spatialAudioBadge.visibility = View.GONE
+        headTrackingBadge.visibility = View.GONE
+        
+        // トランスオーラル非対応バッジを表示
+        transauralBadge.visibility = View.VISIBLE
+        transauralBadge.text = getString(R.string.badge_transaural_not_supported)
+        transauralBadge.setBackgroundResource(R.drawable.bg_badge_disabled)
+        
+        // ボタン: 接続
+        btnDeviceAction.text = getString(R.string.btn_connect)
+        btnDeviceAction.setOnClickListener {
+            startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+        }
+    }
+    
+    /**
+     * Spatializer設定を開く
+     */
+    private fun openSpatializerSettings() {
+        try {
+            // Android 13+ では音声設定を開く
+            val intent = Intent(Settings.ACTION_SOUND_SETTINGS)
+            startActivity(intent)
+        } catch (e: Exception) {
+            // フォールバック
+            startActivity(Intent(Settings.ACTION_SETTINGS))
         }
     }
 }

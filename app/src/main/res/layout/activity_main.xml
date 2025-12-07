@@ -30,19 +30,21 @@
             app:titleCentered="true"
             android:background="?attr/colorSurface" />
 
-        <!-- Headphone Info Card -->
+        <!-- 統合デバイスカード（1枚のみ表示） -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/headphoneCard"
+            android:id="@+id/deviceCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="8dp"
-            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
             app:strokeWidth="1dp"
             app:strokeColor="?attr/colorOutlineVariant"
-            app:cardBackgroundColor="?attr/colorSurfaceContainerLow">
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:rippleColor="?attr/colorPrimaryContainer">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -52,14 +54,14 @@
                 android:gravity="center_vertical">
 
                 <ImageView
-                    android:id="@+id/headphoneIcon"
+                    android:id="@+id/deviceIcon"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
-                    android:src="@drawable/ic_headphones_24"
+                    android:src="@drawable/ic_headphones_off_24"
                     android:background="@drawable/bg_icon_circle"
-                    android:backgroundTint="?attr/colorPrimaryContainer"
+                    android:backgroundTint="?attr/colorErrorContainer"
                     android:padding="8dp"
-                    app:tint="?attr/colorOnPrimaryContainer"
+                    app:tint="?attr/colorOnErrorContainer"
                     android:contentDescription="@string/headphone_icon_desc" />
 
                 <LinearLayout
@@ -70,19 +72,21 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/headphoneName"
+                        android:id="@+id/deviceName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?attr/textAppearanceTitleSmall"
                         android:textColor="?attr/colorOnSurface"
-                        tools:text="AirPods Pro" />
+                        tools:text="Headphones" />
 
                     <LinearLayout
+                        android:id="@+id/badgeContainer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:layout_marginTop="4dp">
 
+                        <!-- 空間オーディオバッジ -->
                         <TextView
                             android:id="@+id/spatialAudioBadge"
                             android:layout_width="wrap_content"
@@ -93,8 +97,11 @@
                             android:background="@drawable/bg_badge"
                             android:backgroundTint="?attr/colorSecondaryContainer"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp" />
+                            android:paddingVertical="2dp"
+                            android:clickable="true"
+                            android:focusable="true" />
 
+                        <!-- ヘッドトラッキングバッジ -->
                         <TextView
                             android:id="@+id/headTrackingBadge"
                             android:layout_width="wrap_content"
@@ -106,75 +113,30 @@
                             android:background="@drawable/bg_badge"
                             android:backgroundTint="?attr/colorTertiaryContainer"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp" />
+                            android:paddingVertical="2dp"
+                            android:clickable="true"
+                            android:focusable="true" />
+
+                        <!-- トランスオーラルモードバッジ（未対応時のみ） -->
+                        <TextView
+                            android:id="@+id/transauralBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/badge_transaural_not_supported"
+                            android:textAppearance="?attr/textAppearanceLabelSmall"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:background="@drawable/bg_badge"
+                            android:backgroundTint="?attr/colorSurfaceVariant"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
+                            android:visibility="gone" />
 
                     </LinearLayout>
 
                 </LinearLayout>
 
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- No Headphone Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/noHeadphoneCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="8dp"
-            android:visibility="visible"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorOutlineVariant"
-            app:cardBackgroundColor="?attr/colorSurfaceContainerLow">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="12dp"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_headphones_off_24"
-                    android:background="@drawable/bg_icon_circle"
-                    android:backgroundTint="?attr/colorErrorContainer"
-                    android:padding="8dp"
-                    app:tint="?attr/colorOnErrorContainer"
-                    android:contentDescription="@string/headphone_disconnected_desc" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/no_headphone_connected"
-                        android:textAppearance="?attr/textAppearanceTitleSmall"
-                        android:textColor="?attr/colorOnSurface" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/no_headphone_hint"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginTop="2dp"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
-
-                </LinearLayout>
-
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnOpenBluetooth"
+                    android:id="@+id/btnDeviceAction"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"

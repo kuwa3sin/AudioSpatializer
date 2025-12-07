@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <item
-        android:id="@+id/action_head_tracking"
-        android:icon="@android:drawable/ic_menu_compass"
-        android:title="@string/head_tracking_settings_title"
-        app:showAsAction="ifRoom" />
-
 </menu>
