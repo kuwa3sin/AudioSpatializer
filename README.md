@@ -1,232 +1,155 @@
 # Audio Spatializer
 
-Android向けに、5.1chサラウンド音声による空間オーディオ再生を提供するアプリケーションです。
-2ch音源をHRTF(頭部伝達関数)に基づいて5.1chに変換し、再生する機能を持ちます。
-また、Spatializer APIとその関連機能によって、対応機器を接続していればヘッドトラッキング処理が可能です。
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-13%2B-green?logo=android" alt="Android 13+">
+  <img src="https://img.shields.io/badge/Kotlin-1.9-purple?logo=kotlin" alt="Kotlin">
+  <img src="https://img.shields.io/badge/Material-You-blue?logo=material-design" alt="Material You">
+</p>
 
-## 主要な機能
+ステレオ音源を5.1chサラウンドに変換し、Android Spatializer APIによる空間オーディオ再生を実現するアプリケーションです。
+ヘッドトラッキング対応デバイスを利用することで、頭の動きに追従する没入感のあるオーディオ体験を提供します。
 
-### Convertタブ
-- 2ch音源を、仮想的に5.1chに変換します。
-- 変換後はMusicsタブで再生できます。
-- 変換モードは変換品質重視・変換速度重視の2つのモードから選択可能です。
+## 主な機能
 
-### Musicsタブ
-- 変換済みのファイルを一覧で表示します。
-- ファイルは、再生停止およびシークバーによる再生位置の指定が可能です。
-- ファイルのリネームや削除、他のアプリケーションへのエクスポートなども可能です。
-- トランスオーラルモードに対応するデバイスでは、デバイスのスピーカーから再生する場合にもサラウンド効果が有効になります。
-- ヘッドトラッキング対応のヘッドセットを接続し、機能を有効にして再生を行うと、自動的にヘッドセットの角度に応じて音像が移動します。
+### Convert（変換）
+ステレオ音源を5.1chサラウンドに変換します。
 
-### Realtimeタブ
-- ステレオ音源を、空間化しながらリアルタイムに再生します。
-- ヘッドトラッキングも利用可能です。
+- **品質優先モード**: HRTF(頭部伝達関数)を利用した変換
+- **高速モード**: リアルタイム処理向けの軽量変換
+- 対応入力形式: WAV, FLAC, AAC, MP3
+- 出力形式: AAC (M4A) 5.1ch
+
+### Musics（再生）
+変換済みファイルのライブラリ管理と再生を行います。
+
+- 再生/一時停止、シークバー操作
+- ファイルのリネーム・削除・エクスポート
+- トランスオーラルモード対応デバイスでは、内蔵スピーカーでサラウンド再生が可能です。
+- ヘッドトラッキング対応デバイスを接続すると、頭の動きに連動して音像が移動します。
+
+### Realtime（リアルタイム再生）
+音楽ファイルをリアルタイムで5.1ch空間化しながら再生します。
+
+- 変換不要で即座に空間オーディオを体験できます。
+- ヘッドトラッキングにも対応
 
 ### デバイス情報
-- 利用しているデバイスが空間オーディオ関連の機能に対応しているかが確認できます。
+デバイスの空間オーディオ対応状況を確認できます。
+
+- 空間オーディオへの対応状況
+- ヘッドトラッキング対応状況
+- トランスオーラルモード対応状況
 
 ## スクリーンショット
 
-| Convert           | Musics         | Realtime           |
-| ----------------- | -------------- | ------------------ |
-| ファイル選択→変換 | ライブラリ再生 | リアルタイム空間化 |
+| Convert           | Musics         | Realtime           | デバイス情報     |
+| ----------------- | -------------- | ------------------ | ---------------- |
+| ファイル選択→変換 | ライブラリ再生 | リアルタイム空間化 | デバイス対応確認 |
 
 ## 技術仕様
 
-### 対応フォーマット
-
-| 入力                  | 出力             |
-| --------------------- | ---------------- |
-| WAV (PCM16, ステレオ) | AAC (M4A)        |
-| FLAC                  | 5.1ch サラウンド |
-| AAC/M4A               |                  |
-| MP3                   |                  |
-
 ### システム要件
 
-- Android 13 (API 33) 以上
-- Java 21
-- Kotlin 1.9+
-- ヘッドトラッキング: 対応イヤホン必須（Pixel Buds Pro, Sony WF-1000XM5等）
+| 項目               | 要件                 |
+| ------------------ | -------------------- |
+| Android            | 13 (API 33) 以上     |
+| Java               | 21                   |
+| ヘッドトラッキング | 対応ヘッドセット必須 |
 
----
+### 空間オーディオの対応デバイス例
 
-## リアルタイム空間化の仕組み
+- Google
+  - Pixel 6 以降 (ただし、aを除く)
+  - Pixel Fold
+  - Pixel Tablet
+    - このうち、Pixel 10シリーズ、Pixel Fold、Pixel 9 Pro Fold、Pixel Tabletでは内蔵スピーカーでのサラウンド再生(トランスオーラルモード)が利用可能です。
 
-`RealtimePlayerService.kt`
+- その他対応デバイス
+
+### ヘッドトラッキングの対応デバイス例
+
+- Google
+  - Pixel Buds Pro
+  - Pixel Buds Pro 2 (検証済み)
+  
+- Sony
+  - WH-1000XM5
+  - WH-1000XM6 (検証済み)
+  - WH-ULT900N / ULT WEAR
+  - WF-1000XM5
+  - WF-LS900N / LinkBuds S
+  
+- その他対応デバイス
+
+## アーキテクチャ
 
 ### 処理フロー
 
 ```
-音楽ファイル
+音声ファイル
     │
     ▼
 MediaCodec（デコード）
     │
-    ▼ ステレオ PCM
+    | ステレオ PCM
+    ▼
+UpmixProcessor / AudioProcessor（5.1ch変換）
     │
-UpmixProcessor（5.1ch変換）
-    │
-    ▼ 5.1ch PCM
-    │
+    | 5.1ch PCM
+    ▼
 AudioTrack（CHANNEL_OUT_5POINT1）
     │
-    ▼ SPATIALIZATION_BEHAVIOR_AUTO
-    │
+    | SPATIALIZATION_BEHAVIOR_AUTO
+    ▼
 Android Spatializer API
     │
-    ▼ HRTF + ヘッドトラッキング
-    │
-🎧 ヘッドフォン出力
+    | 5.1ch音源 + ヘッドトラッキング
+    ▼ 
+音声を出力
 ```
 
-### UpmixProcessor
+### 5.1ch チャンネル生成
 
-ステレオ音源を5.1chにリアルタイム変換:
-
-| チャンネル   | 生成方法                       |
-| ------------ | ------------------------------ |
-| Front L/R    | 入力そのまま                   |
-| Center       | (L + R) / 2                    |
-| LFE          | ローパスフィルタ (120Hz)       |
-| Surround L/R | 位相反転 + ディレイ + リバーブ |
-
-```kotlin
-class UpmixProcessor(sampleRate: Int) {
-    private val lfeFilter = BiquadFilter(sampleRate).apply {
-        setLowpass(120f, 0.707f)
-    }
-    
-    fun process(left: Float, right: Float): FloatArray {
-        val center = (left + right) * 0.5f * centerGain
-        val lfe = lfeFilter.process((left + right) * 0.5f) * lfeGain
-        val surroundL = processReverb(-left * 0.3f)
-        val surroundR = processReverb(-right * 0.3f)
-        
-        return floatArrayOf(left, right, center, lfe, surroundL, surroundR)
-    }
-}
-```
-
----
-
-## 5.1chサラウンド変換
-
-`AudioProcessor.kt`
-
-周波数帯域分離によるチャンネル配分:
-
-```
-ステレオ入力
-    │
-    ├── LPF (120Hz) ────────────────→ LFE (0.1ch)
-    │
-    ├── BPF (300-3000Hz) ───────────→ Center
-    │
-    ├── HPF (3000Hz) + 残差 ────────→ Front L/R
-    │
-    └── リバーブ処理 ───────────────→ Surround L/R
-```
-
-#### チャンネルゲイン設定
-
-| チャンネル   | ゲイン | 説明                |
-| ------------ | ------ | ------------------- |
-| Front L/R    | 0.9    | メイン音声          |
-| Center       | 0.9    | ボーカル/ダイアログ |
-| LFE          | 0.7    | 低域補強            |
-| Surround L/R | 0.35   | 環境音/リバーブ     |
-
-#### Biquadフィルター
-
-`BiquadFilter.kt`
-
-2次IIRフィルタの実装:
-
-```
-        b0 + b1*z^-1 + b2*z^-2
-H(z) = ─────────────────────────
-        a0 + a1*z^-1 + a2*z^-2
-```
-
-```kotlin
-enum class Type { LOWPASS, HIGHPASS, BANDPASS, NOTCH, ALLPASS }
-
-fun process(input: Float): Float {
-    val output = (b0 * input + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2) / a0
-    x2 = x1; x1 = input
-    y2 = y1; y1 = output
-    return output
-}
-```
-
----
-
-### 5. Android Spatializer API統合
-
-`SpatialAudioController.kt`
-
-Android 13+のSpatializer APIをリフレクションで利用:
-
-```kotlin
-class SpatialAudioController(context: Context) {
-    private val audioManager: AudioManager
-    private var spatializer: Any? = null  // android.media.Spatializer
-    
-    fun isAvailable(): Boolean {
-        // リフレクションでSpatializer.getImmersiveAudioLevel()を呼び出し
-    }
-    
-    fun setHeadTrackingEnabled(enabled: Boolean) {
-        // Spatializer.setHeadTrackingEnabled()
-    }
-}
-```
-
----
+| チャンネル   | 生成方法                 |
+| ------------ | ------------------------ |
+| Front L/R    | 入力そのまま             |
+| Center       | (L + R) / 2              |
+| LFE          | ローパスフィルタ (120Hz) |
+| Surround L/R | 位相反転 + リバーブ      |
 
 ## プロジェクト構造
 
 ```
 app/src/main/java/com/example/audiospatializer/
-├── AudioProcessor.kt          # メイン変換エンジン
-├── AudioSpatializerApp.kt     # Application
-├── BiquadFilter.kt            # Biquadフィルター
-├── MainActivity.kt            # メインUI（3タブ構成）
+├── AudioProcessor.kt              # メイン変換エンジン
+├── BiquadFilter.kt                # DSPフィルター
+├── MainActivity.kt                # メイン画面
 │
 ├── audio/
-│   ├── HeadTrackingDeviceManager.kt  # ヘッドトラッキングデバイス管理
-│   ├── SpatialAudioController.kt     # Spatializer API制御
-│   └── UpmixProcessor.kt             # ステレオ→5.1chアップミックス
+│   ├── HeadTrackingDeviceManager.kt   # デバイス管理
+│   ├── SpatialAudioController.kt      # Spatializer API
+│   └── UpmixProcessor.kt              # リアルタイムアップミックス
 │
 ├── data/
-│   ├── ConvertedTrack.kt      # Roomエンティティ
-│   ├── ConvertedTrackDao.kt   # DAO
-│   ├── ConvertedDatabase.kt   # Roomデータベース
-│   └── ConvertedTrackRepository.kt
+│   ├── ConvertedTrack.kt          # Roomエンティティ
+│   └── ConvertedRepository.kt     # リポジトリ
 │
 ├── service/
-│   ├── RealtimePlayerService.kt   # リアルタイム5.1ch再生サービス
-│   ├── PlaybackService.kt         # 変換済みファイル再生サービス
-│   ├── SpatialAudioService.kt     # 空間オーディオ変換サービス
-│   ├── SpatialAudioTileService.kt # クイック設定タイル
-│   └── SpotifyListenerService.kt  # 音楽アプリ連携（通知リスナー）
-│
-├── settings/
-│   └── SpatialAudioSettingsRepository.kt  # DataStore設定
+│   ├── RealtimePlayerService.kt   # リアルタイム再生
+│   └── PlaybackService.kt         # ライブラリ再生
 │
 └── ui/
-    ├── ConvertFragment.kt         # 変換画面
-    ├── MusicsFragment.kt          # 再生画面
-    ├── RealtimeFragment.kt        # リアルタイム再生画面
-    ├── MusicsViewModel.kt
-    ├── MusicListAdapter.kt
-    ├── SupportedDeviceAdapter.kt
-    ├── HeadTrackingActivity.kt    # ヘッドトラッキング設定
-    └── HeadTrackingFragment.kt
+    ├── ConvertFragment.kt         # 変換タブ
+    ├── MusicsFragment.kt          # 再生タブ
+    ├── RealtimeFragment.kt        # リアルタイムタブ
+    └── HeadTrackingFragment.kt    # デバイス情報
 ```
 
----
+## UI/UX
+
+- **Material You (Dynamic Color)**: 壁紙に合わせたテーマカラー
+- **Material 3**: 角丸カードのデザイン、フローティングコントロール
+- **ダークモード対応**: システム設定に連動
 
 ## ビルド
 
@@ -235,25 +158,13 @@ app/src/main/java/com/example/audiospatializer/
 ./gradlew assembleDebug
 ```
 
-### 依存関係
+### 主要な依存関係
 
 - AndroidX Core KTX
 - Room Database
-- ExoPlayer
+- Media3 ExoPlayer
 - DataStore Preferences
-- Material Components (Material 3)
-
----
-
-## UI デザイン
-
-Material 3 Expressiveスタイルを採用:
-- 32dp角丸のカード
-- フローティングコントロールバー
-- パルスアニメーション（再生中）
-- ステータスチップ表示
-
----
+- Material Components 3
 
 ## ライセンス
 
