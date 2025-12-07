@@ -42,9 +42,10 @@
 
 ## スクリーンショット
 
-| Convert           | Musics         | Realtime           | デバイス情報     |
-| ----------------- | -------------- | ------------------ | ---------------- |
-| ファイル選択→変換 | ライブラリ再生 | リアルタイム空間化 | デバイス対応確認 |
+| Convert                                                                                                                              | Musics                                                                                                                               | Realtime                                                                                                                             | デバイス情報                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="1280" height="2582" alt="Image" src="https://github.com/user-attachments/assets/7ddb22a9-c65f-4231-9f61-0b4969f8a507" /> | <img width="1265" height="2566" alt="Image" src="https://github.com/user-attachments/assets/4a49c239-9ace-454e-9eb8-01cbf11aa8d5" /> | <img width="1280" height="2577" alt="Image" src="https://github.com/user-attachments/assets/35a2f475-cf2b-4a89-a791-6a4c803b5914" /> | <img width="1280" height="2608" alt="Image" src="https://github.com/user-attachments/assets/beed0492-6bef-4a37-b6ec-737b85c139f9" /> |
+| ファイル選択→変換                                                                                                                    | ライブラリ再生                                                                                                                       | リアルタイム空間化                                                                                                                   | デバイス対応確認                                                                                                                     |
 
 ## 技術仕様
 
@@ -165,7 +166,3 @@ app/src/main/java/com/example/audiospatializer/
 - Media3 ExoPlayer
 - DataStore Preferences
 - Material Components 3
-
-## ライセンス
-
-MIT License
